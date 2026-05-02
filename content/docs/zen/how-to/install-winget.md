@@ -1,7 +1,8 @@
 ---
-title: Install via WinGet
+title: Install Zen via WinGet
+linkTitle: Install via WinGet
 weight: 20
-description: Install Zen Personal on Windows using WinGet.
+description: Install Zen on Windows using WinGet.
 ---
 
 Zen is available for Windows via __WinGet__, thanks to [DandelionSprout](https://github.com/DandelionSprout) and [UnownPlain](https://github.com/UnownPlain).

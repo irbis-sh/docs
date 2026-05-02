@@ -3,12 +3,9 @@ title: About
 type: about
 ---
 
-Zen is a suite of powerful and flexible apps offering ad-blocking, content filtering, and privacy protection for your personal and enterprise devices. Zen is made by Irbis, in collaboration with the open-source community.
+At Irbis, we believe in computing freedom and a better internet – one without intrusive ads, addictive algorithms, and hidden threats. We're working to make digital privacy and security accessible and ubiquitous.
 
-Thank you for choosing us. We are excited to have you on this journey.
-
-- [Personal Edition](https://irbis.sh/zen)
-- [Enterprise Edition](https://irbis.sh/rime)
+- [Zen](https://irbis.sh/zen)
 - [GitHub](https://github.com/irbis-sh)
 - [Bluesky](https://bsky.app/profile/irbis.sh)
 - [Reddit](https://www.reddit.com/r/IrbisZen/)

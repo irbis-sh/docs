@@ -1,7 +1,8 @@
 ---
-title: Install via Homebrew
+title: Install Zen via Homebrew
+linkTitle: Install via Homebrew
 weight: 10
-description: Install Zen Personal on macOS using Homebrew.
+description: Install Zen on macOS using Homebrew.
 ---
 
 Zen is available for macOS via __Homebrew__.

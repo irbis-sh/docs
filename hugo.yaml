@@ -1,5 +1,5 @@
 # Hugo configuration file
-title: Zen Documentation
+title: Irbis Documentation
 
 # import hextra as module
 module:
@@ -55,7 +55,7 @@ params:
       path: images/logo-black.svg
       dark: images/logo-white.svg
       link: /
-      width: 68
+      width: 82
       height: 24
 
   footer:
@@ -65,3 +65,6 @@ params:
   editURL:
     enable: true
     base: "https://github.com/irbis-sh/zen-docs/edit/master/content"
+
+  imageZoom:
+    enable: true
