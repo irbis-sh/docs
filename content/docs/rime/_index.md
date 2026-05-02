@@ -1,5 +1,6 @@
 ---
-title: Enterprise
+title: Rime
+weight: 2
 ---
 
 - [How-to guides](/docs/enterprise/how-to)

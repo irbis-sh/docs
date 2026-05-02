@@ -1,4 +1,4 @@
-# Zen Docs
+# Irbis Docs
 
 ## Writing documentation
 
