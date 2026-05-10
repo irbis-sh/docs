@@ -21,9 +21,15 @@ menu:
     - name: Docs
       pageRef: /docs
       weight: 1
+    - identifier: more
+      name: More
+      weight: 2
     - name: About
       pageRef: /about
-      weight: 2
+      parent: more
+    - name: Code of Conduct
+      pageRef: /code-of-conduct
+      parent: more
     - name: Contact ↗
       url: "mailto:contact@irbis.sh"
       weight: 3
