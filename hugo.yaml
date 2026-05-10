@@ -74,3 +74,5 @@ params:
 
   imageZoom:
     enable: true
+
+enableRobotsTXT: true
