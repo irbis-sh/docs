@@ -7,5 +7,5 @@ weight: 1
 > Documentation for Zen is a work in progress. If you have an issue or a question, join our [Discord](https://discord.gg/jSzEwby7JY).
 
 {{< cards >}}
-  {{< card link="how-to" title="How-to guides" icon="light-bulb" >}}
+  {{< card link="/docs/zen/how-to/" title="How-to guides" icon="light-bulb" >}}
 {{< /cards >}}
