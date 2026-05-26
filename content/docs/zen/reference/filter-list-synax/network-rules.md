@@ -157,7 +157,7 @@ The modifier's value may include multiple expressions, separated by `|`. This is
 Each expression may be:
 
 - A regular domain name, e.g., `domain=example.net`, `domain=irbis.sh`.
-- A [second-level domain (SLD)](https://icannwiki.org/Second_Level_Domain) wildcard pattern, in the format `label.*`, where `*` corresponds to any [public suffix](https://publicsuffix.org/). E.g., `domain=example.*` matches `example.net`, `example.com`, but not `example.nested.domain.net`.
+- A [functional second-level domain (SLD)](https://icannwiki.org/Second_Level_Domain) wildcard pattern, in the format `label.*`, where `*` corresponds to any [public suffix](https://publicsuffix.org/). E.g., `domain=example.*` matches `example.net`, `example.com`, but not `example.nested.domain.net`.
 - A regular expression matching the domain name, starting and ending with `/`.
 
 Expressions may be prefixed with `~`, which inverts the match (e.g., `domain=~example.net` matches any domain other than `example.net`). Either all expressions or none of them must be prefixed with `~`.
