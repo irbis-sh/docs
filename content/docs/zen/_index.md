@@ -8,4 +8,5 @@ weight: 1
 
 {{< cards >}}
   {{< card link="/docs/zen/how-to/" title="How-to guides" icon="light-bulb" >}}
+  {{< card link="/docs/zen/reference/" title="Reference" icon="academic-cap" >}}
 {{< /cards >}}
