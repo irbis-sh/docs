@@ -96,50 +96,85 @@ For example, `.js|` matches `/script.js`, but not `/script.js?p`. `|https://irbi
 
 A single rule may have multiple modifiers, separated by a comma: `script,method=get`.
 
-Modifiers can be categorised into those that just declare their name, called *flag modifiers* (like `script`, `third-party`, `document`), and others that need an associated value, called *parametrised modifiers* (like `method=get`, `domain=example.com`, `removeparam=id`).
+Modifiers can be categorised into those that just declare their name, called *flag modifiers* (like `script`, `third-party`, `document`), and others that need an associated value, called *parametrised modifiers*, with the value specified after `=` (like `method=get`, `domain=example.com`, `removeparam=id`).
 
 Additionally, some modifiers restrict when a rule applies; these are called *condition modifiers* (like `script`, `domain=...`, `method=get`). Others instruct a rule to perform an action other than plain blocking; these are called *action modifiers* (like `removeparam=...`, `removeheader=...`, `jsonprune=...`).
 
-### Content type modifiers
+Some modifier sections include links to relevant unit tests. Go readers can refer to them for additional examples of behaviour.
+
+### Condition modifiers
+
+#### Content type modifiers
 
 {{< badge "flag" >}}
-{{< badge "condition" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/contenttype_test.go" >}}
 
 **Content type modifiers** match the requested resource type – script, stylesheet, font, image, etc. Zen determines the resource type using the [`Sec-Fetch-Dest`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest) request header.
 
 Multiple content type modifiers may be present in a rule. At least one must match for the rule to be applied.
 
-#### font
+##### `font`
 
 Matches if the request is for a font. Corresponds to [`Sec-Fetch-Dest: font`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#font).
 
-#### image
+##### `image`
 
 Matches if the request is for an image. Corresponds to [`Sec-Fetch-Dest: image`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#image).
 
-#### media
+##### `media`
 
 Matches if the request is for media content – video, audio, or a text track. Corresponds to [`Sec-Fetch-Dest: video`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#video), [`audio`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#audio), and [`track`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#track).
 
-#### object
+##### `object`
 
 Matches if the request is for an object. Corresponds to [`Sec-Fetch-Dest: object`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#object).
 
-#### script
+##### `script`
 
 Matches if the request is for a script. Corresponds to [`Sec-Fetch-Dest: script`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#script).
 
-#### stylesheet
+##### `stylesheet`
 
 Matches if the request is for a CSS stylesheet. Corresponds to [`Sec-Fetch-Dest: style`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#style).
 
-#### subdocument
+##### `subdocument`
 
 Matches if the request is for a frame or an iframe. Corresponds to [`Sec-Fetch-Dest: frame`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#frame) and [`iframe`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#iframe).
 
-#### xmlhttprequest
+##### `xmlhttprequest`
 
 Matches if the request is made via [AJAX](https://developer.mozilla.org/en-US/docs/Glossary/AJAX). Corresponds to [`Sec-Fetch-Dest: empty`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#empty).
+
+#### `domain`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/domain_test.go" >}}
+
+Matches if the request is made from a specified domain, based on the value of the [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referer) header.
+
+The modifier's value may include multiple expressions, separated by `|`. This is a logical OR: if any one expression matches, the modifier matches.
+
+Each expression may be:
+
+- A regular domain name, e.g., `domain=example.net`, `domain=irbis.sh`.
+- A [second-level domain (SLD)](https://icannwiki.org/Second_Level_Domain) wildcard pattern, in the format `label.*`, where `*` corresponds to any [public suffix](https://publicsuffix.org/). E.g., `domain=example.*` matches `example.net`, `example.com`, but not `example.nested.domain.net`.
+- A regular expression matching the domain name, starting and ending with `/`.
+
+Expressions may be prefixed with `~`, which inverts the match (e.g., `domain=~example.net` matches any domain other than `example.net`). Either all expressions or none of them must be prefixed with `~`.
+
+#### `header`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/header_test.go" >}}
+
+Matches a response against a specified header.
+
+The value may use one of two formats:
+
+- A header name, matched case-insensitively. E.g., `header=set-cookie` matches any response that has the `Set-Cookie` header set.
+- A header name, matched case-insensitively, followed by `:` and a header value expression, one of the following:
+  - A full header value. E.g., `header=set-cookie:flavour=choco` matches any response with `Set-Cookie: flavour=choco`.
+  - A regular expression. E.g., `header=set-cookie:/tt/` matches any response with the `Set-Cookie` header set, and the value matching `/tt/`.
 
 ## Hosts rules
 
