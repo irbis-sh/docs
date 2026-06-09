@@ -143,7 +143,11 @@ Matches if the request is for a frame or an iframe. Corresponds to [`Sec-Fetch-D
 
 ##### `xmlhttprequest`
 
-Matches if the request is made via [AJAX](https://developer.mozilla.org/en-US/docs/Glossary/AJAX). Corresponds to [`Sec-Fetch-Dest: empty`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#empty).
+Matches if the request is made via [AJAX](https://developer.mozilla.org/en-US/docs/Glossary/AJAX). Corresponds to [`Sec-Fetch-Dest: empty`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#empty). May also be written as `xhr`.
+
+##### `other`
+
+Matches if the requested resource type corresponds to none of the other content type modifiers.
 
 #### `domain`
 
@@ -175,6 +179,89 @@ The value may use one of two formats:
 - A header name, matched case-insensitively, followed by `:` and a header value expression, one of the following:
   - A full header value. E.g., `header=set-cookie:flavour=choco` matches any response with `Set-Cookie: flavour=choco`.
   - A regular expression. E.g., `header=set-cookie:/tt/` matches any response with the `Set-Cookie` header set, and the value matching `/tt/`.
+
+#### `method`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/method_test.go" >}}
+
+Matches the request's [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods).
+
+The value may include multiple methods, separated by `|`. This is a logical OR: if any one matches, the modifier matches. Methods are matched case-insensitively, so `method=get` and `method=GET` are equivalent.
+
+Methods may be prefixed with `~`, which inverts the match (e.g., `method=~get` matches any method other than `GET`). Either all methods or none of them must be prefixed with `~`.
+
+#### `third-party`
+
+{{< badge "flag" >}}
+
+Matches if the request is *third-party* – made to a different site than the one the user is visiting. Zen determines this from the [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site) request header, treating a request as third-party when its value is `cross-site`.
+
+May be inverted with `~third-party`, which instead matches *first-party* requests – those made to the same origin or site (`Sec-Fetch-Site: same-origin` or `same-site`).
+
+### Action modifiers
+
+> [!TIP]
+> Action modifiers may be combined with condition modifiers to restrict where the transformation applies.
+
+#### `removeparam`
+
+{{< badge "flag" >}}
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removeparam_test.go" >}}
+
+Removes query parameters from the request URL's query string.
+
+The value may take one of several forms:
+
+- Absent entirely: `removeparam` removes all query parameters.
+- A parameter name: `removeparam=utm_source` removes the `utm_source` parameter.
+- An inverted name, prefixed with `~`: `removeparam=~id` removes every parameter except `id`.
+- A regular expression, starting and ending with `/`, matched against each parameter's full `name=value` string: `removeparam=/^utm_/` removes any parameter whose name begins with `utm_`. Appending `i` after the closing `/` makes the match case-insensitive.
+- An inverted regular expression, prefixed with `~`: `removeparam=~/^id=/` removes every parameter whose `name=value` does *not* match.
+
+#### `removeheader`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removeheader_test.go" >}}
+
+Removes a header from the response, or, with the `request:` prefix, from the request. Header names are matched case-insensitively.
+
+- `removeheader=set-cookie` removes the `Set-Cookie` header from the response.
+- `removeheader=request:x-client-data` removes the `X-Client-Data` header from the request.
+
+For safety, a number of security- and protocol-critical headers cannot be removed – including [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS) headers, [`Content-Security-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy), [`Strict-Transport-Security`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security), `Content-Type`, and `Content-Length`. A rule targeting one of these is rejected when its filter list is parsed; the complete list lives in [`removeheader.go`](https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removeheader.go).
+
+#### `jsonprune`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/jsonprune_test.go" >}}
+
+Removes elements from a JSON response body. Only responses with a `Content-Type` of `application/json` are affected; others are passed through unmodified.
+
+The value is a [JSONPath](https://en.wikipedia.org/wiki/JSONPath) expression, and every element it selects is deleted. For example, `jsonprune=$.ads` removes the top-level `ads` field, and `jsonprune=$.items[*].ad` removes the `ad` field from every object in the `items` array. If the expression matches nothing, the response is left unchanged.
+
+> [!NOTE]
+> Zen parses the expression with the [ajson](https://github.com/spyzhov/ajson) library. Refer to [its documentation](https://github.com/spyzhov/ajson#jsonpath) for the supported JSONPath syntax.
+
+#### `scramblejs`
+
+{{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/scramblejs_test.go" >}}
+
+Replaces occurrences of one or more keys in JavaScript with unique, randomly generated identifiers. This applies to responses served as `text/javascript` or `application/javascript`, as well as inline `<script>` blocks in HTML documents. Text outside of scripts is left untouched.
+
+The value is a `|`-separated list of keys, e.g., `scramblejs=key1|key2`. Keys are matched literally, not as regular expressions. Each occurrence is substituted with a fresh random identifier (a letter followed by alphanumeric characters), so code that relies on a shared, predictable name – for example, an anti-adblock flag read across several scripts – sees a different value in each place.
+
+#### `remove-js-constant`
+
+{{< badge "parametrised" >}}
+
+Removes top-level JavaScript `var` declarations from script responses. This applies to responses served as `text/javascript`, as well as inline `<script>` blocks in HTML documents.
+
+The value is a dot-separated path to the binding to remove. `remove-js-constant=adblock` removes a top-level `var adblock = ...` declaration entirely, while a longer path descends into object literals: `remove-js-constant=config.ads` removes only the `ads` property from a top-level `var config = { ... }`, leaving the rest of the object intact. Multiple paths may be specified, separated by `|`.
+
+Only `var` declarations are processed; `let` and `const` bindings are left untouched.
 
 ## Hosts rules
 
