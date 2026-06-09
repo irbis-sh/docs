@@ -5,9 +5,6 @@ description: Syntax for the network rules Zen supports to filter and modify HTTP
 
 This document describes the syntax for the network rules Zen supports to filter and modify HTTP traffic.
 
-> [!INFO]
-> This document is being actively worked on. Check back later for more.
-
 ## Top-level syntax
 
 A rule must have a [match expression](#match-expressions) and may optionally include *modifiers*, separated from the match expression by the `$` character:
@@ -265,7 +262,7 @@ Only `var` declarations are processed; `let` and `const` bindings are left untou
 
 ## Hosts rules
 
-Zen supports a subset of the hosts file syntax. If the IP address specified by the rule is `0.0.0.0` or `127.0.0.1`, Zen will block any traffic directed to the hostname. If the hostname is a domain name, **Zen will also block traffic to any subdomain**. This differs from DNS resolver behaviour.
+Zen supports a subset of the hosts file syntax. If the IP address specified by the rule is `0.0.0.0` or `127.0.0.1`, Zen will block any traffic directed to the hostname. If the hostname is a domain name, **Zen will also block traffic to any subdomain**. Note that this differs from DNS resolver behaviour.
 
 Zen also supports rules with an IP address followed by multiple hostnames.
 
