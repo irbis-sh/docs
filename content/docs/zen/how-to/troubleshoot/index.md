@@ -43,3 +43,20 @@ Fixing this issue comes down to excluding Docker from proxying.
 In Zen, go to `Settings` and scroll down to `App routing`. Ensure that "Proxy all apps except selected" is selected, click "+ Add app", and select `/Applications/Docker.app`. Here's how the setting should look as a result:
 
 ![Zen App routing settings with Proxy all apps except selected enabled and Docker.app excluded](docker-macos.png)
+
+## Linux
+
+### Zen won't start after updating to v0.23.0
+
+The `v0.23.0` update unintentionally made Zen's tray-icon library (AppIndicator) required at startup, so Zen won't launch on systems that don't have it installed. You'll see an error like this in the logs:
+
+```
+error while loading shared libraries: libayatana-appindicator3.so.1: cannot open shared object file: No such file or directory
+```
+
+To get Zen running on your system again, please either update the binary manually to `v0.24.0`, or install `libayatana-appindicator`:
+
+- Debian/Ubuntu: `sudo apt install libayatana-appindicator3-1`
+- Fedora: `sudo dnf install libayatana-appindicator-gtk3`
+
+See [issue #735](https://github.com/irbis-sh/zen-desktop/issues/735) for details.
