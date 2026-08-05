@@ -39,7 +39,7 @@ Examples of unacceptable behavior include:
 ### Code contributions
 
 > [!IMPORTANT]
-> This section only concerns source code, and not other related artifacts, including Git commit messages, PR descriptions, and documentation. For that, see [Human-to-human communication](#human-to-human-communication).
+> This section concerns source code and Git commit messages, and not other related artifacts, including PR descriptions and documentation. For that, see [Human-to-human communication](#human-to-human-communication).
 
 AI use is permitted for source code contributions. However, one principle we ask you to adhere to is to **only submit code that you could reasonably have written yourself**. That means:
 
@@ -59,18 +59,22 @@ AI tools tend to produce code that's functional but suboptimal in terms of quali
 
 You are fully expected to review every line of code your AI tool has generated, and correct any shortcomings in code quality.
 
+#### Commit messages
+
+AI-written commit messages are permitted, under the same principle as code: only submit a message you could reasonably have written yourself. Review it, make sure it accurately describes the change and follows the repository's commit message conventions, and be ready to stand behind it as your own account of the work.
+
 ### Human-to-human communication
 
 AI use for human-to-human communication is **forbidden**, except for light proofreading. This includes:
 
 - GitHub Issues and Discussions
-- Git commit messages and GitHub PR descriptions
+- GitHub PR descriptions
 - Documentation articles
 - Messages in community forums
 
 Any imperfect human-authored text is preferable to AI-generated text. The communication around this project is functional and concerns practical matters, so there's no need for verbose language, complex phrasing, or fancy formatting. What matters is your thinking and intent, and no AI tool is able to faithfully translate that into text.
 
-This is also why AI use is forbidden for Git commits and PR descriptions – these should capture your thinking process, not your AI tool's interpretation of it.
+This is also why AI use is forbidden for PR descriptions – they should capture your thinking process, not your AI tool's interpretation of it.
 
 Proofreading is exempt from this rule, but please avoid verbose word soup.
 
