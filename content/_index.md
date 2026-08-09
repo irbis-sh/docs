@@ -15,12 +15,6 @@ layout: hextra-home
 {{< /hextra/hero-headline >}}
 </div>
 
-<div class="hx:mb-12">
-{{< hextra/hero-subtitle >}}
-  Choose what product you would like to learn about:
-{{< /hextra/hero-subtitle >}}
-</div>
-
 <div class="hx:mb-6">
 {{< hextra/hero-button text="Zen" link="docs/zen" >}}
 </div>

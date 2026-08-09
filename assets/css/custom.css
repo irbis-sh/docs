@@ -200,33 +200,6 @@
   background-color: #007647;
 }
 
-.hero__enterprise-btn {
-  color: #fff;
-  background-color: #2E3348;
-}
-
-.hero__enterprise-btn:hover {
-  background-color: #1f2230;
-}
-
-.hero__enterprise-btn:active {
-  background-color: #171a24;
-}
-
-.dark .hero__enterprise-btn {
-  background-color: #3d4261;
-  border: 1px solid #2E3348;
-  box-shadow: 2px 2px #1f2230;
-}
-
-.dark .hero__enterprise-btn:hover {
-  background-color: #2f3449;
-}
-
-.dark .hero__enterprise-btn:active {
-  background-color: #252936;
-}
-
 @media (color-gamut: p3) {
   .hero__personal-btn {
     background-color: color(display-p3 0 .605 .377);
