@@ -43,13 +43,18 @@ menu:
       url: "https://github.com/irbis-sh"
       params:
         icon: github
-    - name: Bluesky
+    - name: Mastodon
       weight: 6
+      url: "https://mastodon.social/@irbis_sh"
+      params:
+        icon: mastodon
+    - name: Bluesky
+      weight: 7
       url: "https://bsky.app/profile/irbis.sh"
       params:
         icon: bluesky
     - name: Discord
-      weight: 7
+      weight: 8
       url: "https://discord.gg/jSzEwby7JY"
       params:
         icon: discord
