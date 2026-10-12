@@ -82,3 +82,9 @@ params:
     enable: true
 
 enableRobotsTXT: true
+
+# No pages use tags or categories, so their empty list pages only add noise
+# to the sitemap.
+disableKinds:
+  - taxonomy
+  - term
