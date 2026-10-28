@@ -1,6 +1,8 @@
 ---
 title: Network rules
 description: Syntax for the network rules Zen supports to filter and modify HTTP traffic.
+aliases:
+  - /docs/zen/reference/filter-list-synax/network-rules/
 ---
 
 This document describes the syntax for the network rules Zen supports to filter and modify HTTP traffic.
