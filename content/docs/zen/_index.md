@@ -1,5 +1,6 @@
 ---
 title: Zen
+description: How to install, set up and troubleshoot Zen, with reference material and background on how it works.
 weight: 1
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: Filter list syntax
+description: Syntax for the filter lists Zen supports, including comments and network rules.
 aliases:
   - /docs/zen/reference/filter-list-synax/
 ---

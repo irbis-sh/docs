@@ -1,5 +1,5 @@
 ---
-title: Zen Documentation
+title: Irbis Documentation
 toc: false
 layout: hextra-home
 ---

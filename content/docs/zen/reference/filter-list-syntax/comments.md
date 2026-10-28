@@ -1,5 +1,6 @@
 ---
 title: Comments
+description: Which lines Zen treats as comments in filter lists.
 aliases:
   - /docs/zen/reference/filter-list-synax/comments/
 ---

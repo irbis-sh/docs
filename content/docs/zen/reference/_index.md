@@ -1,5 +1,6 @@
 ---
 title: Reference
+description: Technical reference for Zen, including the filter list syntax it supports.
 ---
 
 {{< cards >}}

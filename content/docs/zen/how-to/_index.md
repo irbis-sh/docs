@@ -1,5 +1,6 @@
 ---
 title: How-to guides
+description: Step-by-step guides for installing Zen, setting it up on Linux and fixing common problems.
 ---
 
 {{< cards >}}

@@ -1,5 +1,6 @@
 ---
 title: Docs
+description: Documentation for Irbis projects, including Zen.
 ---
 
 Documentation for Irbis projects.

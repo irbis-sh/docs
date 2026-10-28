@@ -1,5 +1,6 @@
 ---
 title: About
+description: Irbis builds open-source privacy and security software, including the Zen ad-blocker.
 type: about
 ---
 

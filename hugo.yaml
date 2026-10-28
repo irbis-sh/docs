@@ -60,6 +60,11 @@ menu:
         icon: discord
 
 params:
+  description: Documentation for Irbis projects, starting with Zen, the open-source ad-blocker for Windows, macOS and Linux.
+  # Open Graph image for pages that don't set their own `images`.
+  images:
+    - /images/og-irbis.jpg
+
   navbar:
     displayTitle: false
     displayLogo: true

@@ -1,5 +1,6 @@
 ---
 title: Explanation
+description: Background on how Zen works, including its security architecture and the hardware-backed CA key.
 ---
 
 {{< cards >}}
