@@ -13,3 +13,5 @@ At Irbis, we believe in computing freedom and a better internet – one without 
 - [Reddit](https://www.reddit.com/r/IrbisZen/)
 - [Discord](https://discord.gg/jSzEwby7JY)
 
+Want to help? See [Contribute](/contribute/).
+

@@ -3,7 +3,7 @@ title: Irbis Documentation
 toc: false
 layout: hextra-home
 ---
-{{< hextra/hero-badge link="https://github.com/irbis-sh/zen-docs">}}
+{{< hextra/hero-badge link="https://github.com/irbis-sh/docs">}}
   <div class="hx:w-2 hx:h-2 hx:rounded-full hx:bg-primary-400"></div>
   <span>View this documentation on GitHub</span>
   {{< icon name="arrow-circle-right" attributes="height=14" >}}

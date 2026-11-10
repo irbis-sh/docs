@@ -31,6 +31,9 @@ menu:
     - name: Code of Conduct
       pageRef: /code-of-conduct
       parent: more
+    - name: Contribute
+      pageRef: /contribute
+      parent: more
     - name: Contact ↗
       url: "mailto:contact@irbis.sh"
       weight: 3
@@ -81,7 +84,7 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/irbis-sh/zen-docs/edit/master/content"
+    base: "https://github.com/irbis-sh/docs/edit/master/content"
 
   imageZoom:
     enable: true
