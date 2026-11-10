@@ -84,7 +84,7 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/irbis-sh/zen-docs/edit/master/content"
+    base: "https://github.com/irbis-sh/docs/edit/master/content"
 
   imageZoom:
     enable: true
