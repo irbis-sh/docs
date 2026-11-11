@@ -9,7 +9,7 @@ This document describes the syntax for the network rules Zen supports to filter 
 
 ## Top-level syntax
 
-A rule must have a [match expression](#match-expressions) and may optionally include *modifiers*, separated from the match expression by the `$` character:
+A rule consists of a [match expression](#match-expressions) and, optionally, *modifiers*, separated from the match expression by the `$` character:
 
 ```AdBlock
 <match-expression>
@@ -17,14 +17,18 @@ A rule must have a [match expression](#match-expressions) and may optionally inc
 <match-expression>$<modifiers>
 ```
 
-A match expression determines whether a URL matches a rule.
+A match expression determines whether a URL matches a rule. If a rule has modifiers, its match expression may be empty or consist only of `*`. The rule then applies to every URL: `$removeparam=utm_source`.
 
-If modifiers are absent from a rule, it simply blocks all requests whose URLs match. If modifiers are present, they perform additional matching against metadata (e.g., HTTP method), or modify requests or responses in various ways.
+If modifiers are absent from a rule, it blocks requests whose URLs match. If modifiers are present, they perform additional matching against metadata (e.g., HTTP method), or modify requests or responses in various ways.
+
+A rule that blocks requests does not stop a page load that the user started, such as by clicking a link, unless it has the [`document`](#document) or [`all`](#all) modifier.
+
+A rule that starts with `@@` is an [exception rule](#exception-rules), which cancels other rules.
 
 ## Match expressions
 
-URLs are matched against match expressions according to these rules:
-- Percent-encoded triplets (e.g., `%20`) are left as-is and are not decoded into their canonical form.
+Zen prepares a URL before matching it against match expressions:
+- The port is removed. A match expression must not include one: `||example.com:8080/path` never matches, while `||example.com/path` matches requests to any port.
 - Internationalised domain names are processed in ASCII (Punycode-encoded and prefixed with `xn--`).
 
 If the match expression starts and ends with `/`, it is interpreted as a [regexp-based expression](#regexp-based-expressions). Otherwise, it is interpreted as a [pattern-based expression](#pattern-based-expressions).
@@ -42,12 +46,14 @@ If the match expression starts and ends with `/`, it is interpreted as a [regexp
 |about
 ```
 
-By default, pattern-based expressions can match starting at any position in the URL. The pattern must be matched in full, from the first to the last character.
+A pattern does not have to cover the whole URL, but it must be matched in full, from its first to its last character. A match may start only at one of these positions in the URL:
+- the beginning of the URL
+- one of the characters `- . _ ~ : / ? # [ ] @ ! $ & ' ( ) * + , ; % =`
+- the character right after one of them
 
-Regular characters behave as expected:
-- `a` matches any URL containing `a`
-- `.` matches any URL containing `.`
-- runs of consecutive characters are matched verbatim – e.g., `/path/example` matches any URL containing `/path/example` in any position
+A match may end at any position. For example, `ads` matches `https://example.com/ads.js` and `https://example.com/adserver.js`, but not `https://example.com/loads.js`, where `ads` is in the middle of a word. To match at any position, start the pattern with the `*` token, described below: `*ads` matches all three URLs.
+
+Regular characters are matched verbatim – e.g., `/path/example` matches any URL containing `/path/example`.
 
 The special tokens function as follows:
 
@@ -70,7 +76,7 @@ but not `https://github.com/?from=irbis.sh`.
 
 #### `^`
 
-Called a **separator**, it matches one or more characters other than a letter, digit, `_`, `-`, `.`, or `%`. It also matches the end of a URL.
+Called a **separator**, it matches a character from this set: `~ : / ? # [ ] @ ! $ & ' ( ) * + , ; =`. It matches either one such character or a whole run of consecutive ones, but nothing in between: `foo^/bar` matches `foo:/bar`, but not `foo://bar`. It also matches the end of a URL.
 
 For example, `/path^` matches `/path`, `/path/`, and `/path/?p`.
 
@@ -97,7 +103,11 @@ A single rule may have multiple modifiers, separated by a comma: `script,method=
 
 Modifiers can be categorised into those that just declare their name, called *flag modifiers* (like `script`, `third-party`, `document`), and others that need an associated value, called *parametrised modifiers*, with the value specified after `=` (like `method=get`, `domain=example.com`, `removeparam=id`).
 
-Additionally, some modifiers restrict when a rule applies; these are called *condition modifiers* (like `script`, `domain=...`, `method=get`). Others instruct a rule to perform an action other than plain blocking; these are called *action modifiers* (like `removeparam=...`, `removeheader=...`, `jsonprune=...`).
+Additionally, some modifiers restrict when a rule applies; these are called *condition modifiers* (like `script`, `domain=...`, `method=get`). Others instruct a rule to perform an action other than plain blocking; these are called *action modifiers* (like `removeparam=...`, `removeheader=...`, `jsonprune=...`). A few modifiers belong to neither group and are described under [Other modifiers](#other-modifiers).
+
+A comma inside a modifier's value must be escaped with a backslash: `removeparam=/a\,b/`.
+
+If a rule has a modifier Zen does not support, the whole rule is discarded.
 
 Some modifier sections include links to relevant unit tests. Go readers can refer to them for additional examples of behaviour.
 
@@ -106,11 +116,21 @@ Some modifier sections include links to relevant unit tests. Go readers can refe
 #### Content type modifiers
 
 {{< badge "flag" >}}
-{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/contenttype_test.go" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/contenttype/contenttype_test.go" >}}
 
 **Content type modifiers** match the requested resource type – script, stylesheet, font, image, etc. Zen determines the resource type using the [`Sec-Fetch-Dest`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest) request header.
 
+A request without this header, such as one made by an app other than a browser, has no type, unless it is a [`ping`](#ping) or [`websocket`](#websocket) request. A rule with a content type modifier, inverted ones included, does not match such a request. The only exception is [`all`](#all) used without inverted modifiers. For a rule that modifies a response, Zen also checks the request first. If the request has no type, Zen falls back to the response's `Content-Type` header.
+
 Multiple content type modifiers may be present in a rule. At least one must match for the rule to be applied.
+
+A content type modifier may be inverted with `~`. A rule with only inverted modifiers matches every type other than the inverted ones: `~script` matches requests of every type except scripts. If a rule also has modifiers that are not inverted, the inverted types are excluded from them. A rule whose inverted modifiers exclude every type it lists, like `image,~image`, is rejected.
+
+##### `document`
+
+Matches if the request is for a top-level page. Corresponds to [`Sec-Fetch-Dest: document`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#document). May also be written as `doc`.
+
+`document` also changes what a blocking rule may block. By default, a blocking rule does not stop a page load that the user started, such as by clicking a link. Zen recognises such a page load by the `Sec-Fetch-Dest: document` and `Sec-Fetch-User: ?1` request headers. A rule with `document` or [`all`](#all) blocks it.
 
 ##### `font`
 
@@ -128,6 +148,10 @@ Matches if the request is for media content – video, audio, or a text track. C
 
 Matches if the request is for an object. Corresponds to [`Sec-Fetch-Dest: object`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#object).
 
+##### `ping`
+
+Matches if the request is a ping sent when the user follows a link with a [`ping`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a#ping) attribute. Zen recognises it by a `Ping-To` or `Ping-From` request header together with `Content-Type: text/ping`.
+
 ##### `script`
 
 Matches if the request is for a script. Corresponds to [`Sec-Fetch-Dest: script`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#script).
@@ -140,26 +164,38 @@ Matches if the request is for a CSS stylesheet. Corresponds to [`Sec-Fetch-Dest:
 
 Matches if the request is for a frame or an iframe. Corresponds to [`Sec-Fetch-Dest: frame`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#frame) and [`iframe`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#iframe).
 
+##### `websocket`
+
+Matches if the request opens a WebSocket connection. Corresponds to `Sec-Fetch-Dest: websocket`. If the request has no `Sec-Fetch-Dest` header, Zen also recognises it by the `Connection: Upgrade` and `Upgrade: websocket` request headers.
+
 ##### `xmlhttprequest`
 
 Matches if the request is made via [AJAX](https://developer.mozilla.org/en-US/docs/Glossary/AJAX). Corresponds to [`Sec-Fetch-Dest: empty`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest#empty). May also be written as `xhr`.
 
 ##### `other`
 
-Matches if the requested resource type corresponds to none of the other content type modifiers.
+Matches if the request has a `Sec-Fetch-Dest` header whose value corresponds to none of the other content type modifiers, e.g., `manifest` or `worker`.
+
+For a rule that modifies a response to a request that has no type, `other` also matches if the response's `Content-Type` corresponds to none of the other content type modifiers, e.g., `application/json`.
+
+##### `all`
+
+Matches requests of every type, including requests that have no type. Like [`document`](#document), it also lets a blocking rule stop page loads that the user started.
+
+`all` cannot be inverted. Combined with inverted modifiers, as in `all,~script`, it matches every type except the inverted ones, and no longer matches requests that have no type.
 
 #### `domain`
 
 {{< badge "parametrised" >}}
 {{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/domain_test.go" >}}
 
-Matches if the request is made from a specified domain, based on the value of the [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referer) header.
+Matches if the request is made from a specified domain. Zen takes the domain from the [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referer) header. If the request has no `Referer`, Zen uses the domain of the request URL itself.
 
 The modifier's value may include multiple expressions, separated by `|`. This is a logical OR: if any one expression matches, the modifier matches.
 
 Each expression may be:
 
-- A regular domain name, e.g., `domain=example.net`, `domain=irbis.sh`.
+- A regular domain name, e.g., `domain=example.net`, `domain=irbis.sh`. It also matches all subdomains of that domain.
 - A [functional second-level domain (SLD)](https://icannwiki.org/Second_Level_Domain) wildcard pattern, in the format `label.*`, where `*` corresponds to any [public suffix](https://publicsuffix.org/). E.g., `domain=example.*` matches `example.net`, `example.com`, but not `example.nested.domain.net`.
 - A regular expression matching the domain name, starting and ending with `/`.
 
@@ -179,6 +215,10 @@ The value may use one of two formats:
   - A full header value. E.g., `header=set-cookie:flavour=choco` matches any response with `Set-Cookie: flavour=choco`.
   - A regular expression. E.g., `header=set-cookie:/tt/` matches any response with the `Set-Cookie` header set, and the value matching `/tt/`.
 
+The header value expression must not contain `:`. A rule that has one is rejected.
+
+`header` only takes effect in a rule that also has an [action modifier](#action-modifiers) that changes the response, such as `removeheader` or `jsonprune`. A rule with `header` and no such modifier never applies: it does not block the request or the response.
+
 #### `method`
 
 {{< badge "parametrised" >}}
@@ -193,10 +233,13 @@ Methods may be prefixed with `~`, which inverts the match (e.g., `method=~get` m
 #### `third-party`
 
 {{< badge "flag" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/thirdparty_test.go" >}}
 
 Matches if the request is *third-party* – made to a different site than the one the user is visiting. Zen determines this from the [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site) request header, treating a request as third-party when its value is `cross-site`.
 
 May be inverted with `~third-party`, which instead matches *first-party* requests – those made to the same origin or site (`Sec-Fetch-Site: same-origin` or `same-site`).
+
+If the header is absent or has any other value, such as `none`, neither `third-party` nor `~third-party` matches.
 
 ### Action modifiers
 
@@ -219,6 +262,8 @@ The value may take one of several forms:
 - A regular expression, starting and ending with `/`, matched against each parameter's full `name=value` string: `removeparam=/^utm_/` removes any parameter whose name begins with `utm_`. Appending `i` after the closing `/` makes the match case-insensitive.
 - An inverted regular expression, prefixed with `~`: `removeparam=~/^id=/` removes every parameter whose `name=value` does *not* match.
 
+When a rule removes at least one parameter, Zen does not forward the request. It responds with a `307 Temporary Redirect` to the URL without the removed parameters.
+
 #### `removeheader`
 
 {{< badge "parametrised" >}}
@@ -229,7 +274,7 @@ Removes a header from the response, or, with the `request:` prefix, from the req
 - `removeheader=set-cookie` removes the `Set-Cookie` header from the response.
 - `removeheader=request:x-client-data` removes the `X-Client-Data` header from the request.
 
-For safety, a number of security- and protocol-critical headers cannot be removed – including [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS) headers, [`Content-Security-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy), [`Strict-Transport-Security`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security), `Content-Type`, and `Content-Length`. A rule targeting one of these is rejected when its filter list is parsed; the complete list lives in [`removeheader.go`](https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removeheader.go).
+For safety, a number of security- and protocol-critical headers cannot be removed. A rule targeting one of these is rejected; the complete list is in [`removeheader.go`](https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removeheader.go).
 
 #### `jsonprune`
 
@@ -255,6 +300,7 @@ The value is a `|`-separated list of keys, e.g., `scramblejs=key1|key2`. Keys ar
 #### `remove-js-constant`
 
 {{< badge "parametrised" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rulemodifiers/removejsconstant/removejsconstant_test.go" >}}
 
 Removes top-level JavaScript `var` declarations from script responses. This applies to responses served as `text/javascript`, as well as inline `<script>` blocks in HTML documents.
 
@@ -262,11 +308,57 @@ The value is a dot-separated path to the binding to remove. `remove-js-constant=
 
 Only `var` declarations are processed; `let` and `const` bindings are left untouched.
 
+### Other modifiers
+
+#### `important`
+
+{{< badge "flag" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/exceptionrule/exceptionrule_test.go" >}}
+
+Protects a rule from [exception rules](#exception-rules). An exception rule cancels a rule with `important` only if the exception rule has `important` too.
+
+For example, `@@||example.com^` cancels `||example.com^$script`, but not `||example.com^$script,important`. `@@||example.com^$important` cancels both.
+
+#### `_`
+
+{{< badge "flag" >}}
+{{< badge content="tests" color="blue" link="https://github.com/irbis-sh/zen-desktop/blob/master/internal/networkrules/rule/rule_test.go" >}}
+
+Does nothing. It consists of one or more underscores and may be used to make a long rule easier to read: `||example.com^$_,script,____,domain=example.net`.
+
+## Exception rules
+
+A rule that starts with `@@` is an **exception rule**. It does not block or modify anything itself. Instead, it cancels other rules for the requests it matches. After `@@`, it follows the same syntax as any other rule:
+
+```AdBlock
+||example.com^
+@@||example.com/assets/
+```
+
+Here, the first rule blocks requests to `example.com`, and the second one lets requests to `example.com/assets/` through.
+
+The match expression, [content type modifiers](#content-type-modifiers) and other [condition modifiers](#condition-modifiers) of an exception rule only decide which requests it applies to. The rules it cancels do not need to have the same ones. For example, `@@||ads.example^$script,domain=example.com` cancels `||ads.example^` for scripts requested from `example.com`.
+
+Which rules an exception rule cancels depends on its [action modifiers](#action-modifiers):
+
+- **Without** action modifiers, it cancels every rule that matches the request, including rules with action modifiers. `@@||example.com^` cancels both `||example.com^` and `||example.com^$removeparam=utm_source`.
+- **With** action modifiers, it cancels only the rules that have every one of those modifiers with the same value. `@@||example.com^$removeparam=utm_source` cancels `||example.com^$removeparam=utm_source`. It does not cancel `||example.com^$removeparam=utm_medium`, `||example.com^$removeparam`, or `||example.com^`.
+
+A rule is always cancelled in full. `@@||example.com^$removeparam=a` cancels `||example.com^$removeparam=a,removeparam=b`, so the `b` parameter is not removed either.
+
+A rule with the [`important`](#important) modifier can only be cancelled by an exception rule that has it too.
+
 ## Hosts rules
 
 Zen supports a subset of the hosts file syntax. If the IP address specified by the rule is `0.0.0.0` or `127.0.0.1`, Zen will block any traffic directed to the hostname. If the hostname is a domain name, **Zen will also block traffic to any subdomain**. Note that this differs from DNS resolver behaviour.
 
 Zen also supports rules with an IP address followed by multiple hostnames.
+
+Everything after a `#` character on the line is treated as a comment and ignored.
+
+Zen skips the hostnames that hosts files commonly list for the local machine: `localhost`, `localhost.localdomain`, `local`, `broadcasthost`, `0.0.0.0`, and names made of `ip6-` followed only by letters, digits or underscores, such as `ip6-localhost` and `ip6-allnodes`.
+
+A hosts rule behaves like a rule with the [`all`](#all) modifier.
 
 For additional reference on hosts files, see [Wikipedia](https://en.wikipedia.org/wiki/Hosts_(file)) and [hosts(5)](https://man7.org/linux/man-pages/man5/hosts.5.html).
 
