@@ -7,7 +7,7 @@ Believe in our mission and want to support our projects? There are many ways to 
 
 ## For everyone
 
-- Help us grow – star our repositories on [GitHub](https://github.com/irbis-sh), and follow us on [Discord](https://discord.gg/jSzEwby7JY), [Bluesky](https://bsky.app/profile/irbis.sh), [Mastodon](https://mastodon.social/@irbis_sh) and [Reddit](https://www.reddit.com/r/IrbisZen/).
+- Help us grow – star our repositories on [GitHub](https://github.com/irbis-sh), and join us on [Discord](https://discord.gg/jSzEwby7JY), [Bluesky](https://bsky.app/profile/irbis.sh), [Mastodon](https://mastodon.social/@irbis_sh) and [Reddit](https://www.reddit.com/r/IrbisZen/).
 - Spread the word – recommend Zen to friends, family and colleagues, or write about it online.
 - Donate – support our work financially through [Open Collective](https://opencollective.com/irbis-sh).
 - Report a problem – something not working in Zen? Let us know through the [issue triage form](https://github.com/irbis-sh/zen-desktop/discussions/new?category=issue-triage).
